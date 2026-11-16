@@ -162,7 +162,7 @@ const TreeNode = ({
   const childMaxCountDigits = useMemo(() => {
     let m = 0;
     for (const c of filteredChildren) {
-      if ((c.type !== 'resource' && c.type !== 'apiVersion') || c.hideCount) continue;
+      if ((c.type !== 'resource' && c.type !== 'apiVersion' && c.type !== 'port-forwarding') || c.hideCount) continue;
       const len = c.count === undefined || c.count === null ? 1 : String(c.count).length;
       if (len > m) m = len;
     }
@@ -366,7 +366,7 @@ const TreeNode = ({
           ) : (
             <span className="tree-node-arrow tree-node-arrow-placeholder" aria-hidden="true" />
           )}
-          {(node.type === 'resource' || node.type === 'apiVersion') && !node.hideCount && (
+          {(node.type === 'resource' || node.type === 'apiVersion' || node.type === 'port-forwarding') && !node.hideCount && (
             <span className="tree-node-count">
               {node.count === undefined || node.count === null ? '-' : `${node.count}`}
             </span>

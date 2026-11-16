@@ -382,6 +382,7 @@ const buildCategoryIcons = (): Record<string, IconRenderer> => {
   register(m, <K.ConfigIcon />, 'config', 'configuration', 'cluster-settings');
   register(m, <K.NetworkIcon />, 'networking');
   register(m, <K.RouteIcon />, 'network');
+  register(m, <K.ServiceIcon />, 'port-forwarding');
   register(m, <K.StorageIcon />, 'storage');
   register(m, <K.RbacIcon />, 'rbac');
   register(m, <K.KeyIcon />, 'access');

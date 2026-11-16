@@ -110,13 +110,25 @@ class API {
   async triggerCronJob(cluster: string, namespace: string, name: string): Promise<{ jobName: string }> {
     return resources.triggerCronJob(cluster, namespace, name);
   }
-  async createPortForward(cluster: string, namespace: string, podName: string, remotePort: number): Promise<PortForward> {
+  async createPortForward(
+    cluster: string,
+    namespace: string,
+    podName: string,
+    remotePort: number,
+  ): Promise<PortForward> {
     return resources.createPortForward(cluster, namespace, podName, remotePort);
   }
-  async createServicePortForward(cluster: string, namespace: string, serviceName: string, port: number): Promise<PortForward> {
+  async createServicePortForward(
+    cluster: string,
+    namespace: string,
+    serviceName: string,
+    port: number,
+  ): Promise<PortForward> {
     return resources.createServicePortForward(cluster, namespace, serviceName, port);
   }
   async stopPortForward(id: string): Promise<void> { return resources.stopPortForward(id); }
+  async removePortForward(id: string): Promise<void> { return resources.removePortForward(id); }
+  async startPortForward(pf: PortForward): Promise<PortForward> { return resources.startPortForward(pf); }
   async listPortForwards(cluster?: string): Promise<PortForward[]> { return resources.listPortForwards(cluster); }
   async taintNode(cluster: string, nodeName: string, key: string, value: string, effect: string): Promise<void> {
     return resources.taintNode(cluster, nodeName, key, value, effect);

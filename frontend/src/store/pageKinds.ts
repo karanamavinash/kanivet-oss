@@ -8,6 +8,7 @@ export const PAGE_KINDS = new Set([
   'CertificatesDashboard',
   'TopologyView',
   'NetworkPage',
+  'PortForwardsPage',
   'HelmReleases',
   'IncidentTimeline',
   'HealthIssues',
