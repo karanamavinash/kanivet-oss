@@ -1,0 +1,112 @@
+.port-forwarding-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.port-forwarding-title-row {
+  padding: 10px 14px 0;
+}
+
+.port-forwarding-list-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.port-forwarding-table-area {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.port-forwarding-table {
+  min-width: 560px;
+  width: 100%;
+}
+
+.port-forwarding-error {
+  margin: 8px 14px 0;
+  padding: 0.65rem 0.85rem;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--danger, #f85149) 12%, transparent);
+  color: var(--danger, #f85149);
+  font-size: 0.875rem;
+}
+
+.port-forwarding-empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--text2);
+  font-size: 0.9rem;
+}
+
+.port-forwarding-hint {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.port-forwarding-name-cell {
+  max-width: 220px;
+}
+
+.port-forwarding-row {
+  cursor: pointer;
+}
+
+.port-forwarding-name-text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.port-forwarding-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent, #58a6ff);
+  cursor: pointer;
+  font: inherit;
+}
+
+.port-forwarding-link:hover {
+  text-decoration: underline;
+}
+
+.port-forwarding-status {
+  font-size: 12px;
+  color: var(--text2);
+}
+
+.port-forwarding-status.is-active {
+  color: var(--green);
+  font-weight: 500;
+}
+
+.port-forwarding-row-inactive {
+  opacity: 0.72;
+}
+
+.port-forwarding-menu-col {
+  width: 40px;
+  text-align: right;
+}
+
+@media (max-width: 720px) {
+  .port-forwarding-col-kind {
+    display: none;
+  }
+
+  .port-forwarding-title-row {
+    padding: 8px 10px 0;
+  }
+
+  .port-forwarding-name-cell {
+    max-width: 140px;
+  }
+}

@@ -248,10 +248,19 @@ export async function triggerCronJob(cluster: string, namespace: string, name: s
   }
 }
 
-export async function createPortForward(cluster: string, namespace: string, podName: string, remotePort: number): Promise<PortForward> {
+export async function createPortForward(
+  cluster: string,
+  namespace: string,
+  podName: string,
+  remotePort: number,
+): Promise<PortForward> {
   const endpoint = `/cluster/pods/${encodeURIComponent(namespace)}/${encodeURIComponent(podName)}/portforward`;
   try {
-    const response = await apiClient.getAxios().post(endpoint, { remotePort }, { params: { cluster } });
+    const response = await apiClient.getAxios().post(
+      endpoint,
+      { remotePort },
+      { params: { cluster } },
+    );
     return response.data;
   } catch (error: any) {
     logger.error('Failed to create port forward:', { error: error.message });
@@ -259,10 +268,19 @@ export async function createPortForward(cluster: string, namespace: string, podN
   }
 }
 
-export async function createServicePortForward(cluster: string, namespace: string, serviceName: string, port: number): Promise<PortForward> {
+export async function createServicePortForward(
+  cluster: string,
+  namespace: string,
+  serviceName: string,
+  port: number,
+): Promise<PortForward> {
   const endpoint = `/cluster/services/${encodeURIComponent(namespace)}/${encodeURIComponent(serviceName)}/portforward`;
   try {
-    const response = await apiClient.getAxios().post(endpoint, { port }, { params: { cluster } });
+    const response = await apiClient.getAxios().post(
+      endpoint,
+      { port },
+      { params: { cluster } },
+    );
     return response.data;
   } catch (error: any) {
     logger.error('Failed to create service port forward:', { error: error.message });
@@ -271,12 +289,39 @@ export async function createServicePortForward(cluster: string, namespace: strin
 }
 
 export async function stopPortForward(id: string): Promise<void> {
-  const endpoint = `/cluster/portforward/${encodeURIComponent(id)}`;
-  logger.info('Stopping port forward:', { id, endpoint });
   try {
-    await apiClient.getAxios().delete(endpoint);
+    await apiClient.getAxios().post('/cluster/portforward/stop', { id });
   } catch (error: any) {
     logger.error('Failed to stop port forward:', { id, error: error.message });
+    throw error;
+  }
+}
+
+export async function removePortForward(id: string): Promise<void> {
+  try {
+    await apiClient.getAxios().post('/cluster/portforward/stop', { id, remove: true });
+  } catch (error: any) {
+    logger.error('Failed to delete port forward:', { id, error: error.message });
+    throw error;
+  }
+}
+
+export async function startPortForward(pf: PortForward): Promise<PortForward> {
+  try {
+    const response = await apiClient.getAxios().post('/cluster/portforward/start', {
+      id: pf.id,
+      cluster: pf.cluster,
+      namespace: pf.namespace,
+      podName: pf.podName,
+      remotePort: pf.remotePort,
+      localPort: pf.localPort,
+      kind: pf.kind,
+      name: pf.name,
+      servicePort: pf.servicePort,
+    });
+    return response.data;
+  } catch (error: any) {
+    logger.error('Failed to start port forward:', { id: pf.id, error: error.message });
     throw error;
   }
 }

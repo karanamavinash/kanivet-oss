@@ -209,12 +209,14 @@ const DetailView = ({ mode: _mode }: DetailViewProps = {}) => {
   const itemName = item?.metadata?.name || item?.name || '';
   const itemNamespace = item?.metadata?.namespace || item?.namespace || '';
   const isHelmRelease = item?.kind === 'HelmRelease' || resource?.kind === 'HelmRelease';
+  const isPortForward =
+    item?.kind === 'PortForward' || resource?.kind === 'PortForward'; // synthetic inspector kind
   // A tab opened from a link or a drop may know its object only by apiVersion.
   const itemApiVersion: string = item?.apiVersion || '';
   const refreshGroup = resource?.version ? resource.group || '' : itemApiVersion.includes('/') ? itemApiVersion.split('/')[0] : '';
   const refreshVersion = resource?.version || (itemApiVersion.includes('/') ? itemApiVersion.split('/')[1] : itemApiVersion);
   const refreshKind = resource?.kind || item?.kind || '';
-  const refreshKey = activeTab && !isDetailsPanelCollapsed && !isHelmRelease && refreshVersion && refreshKind && itemName
+  const refreshKey = activeTab && !isDetailsPanelCollapsed && !isHelmRelease && !isPortForward && refreshVersion && refreshKind && itemName
     ? `${activeTab.cluster || activeCluster}|${refreshGroup}|${refreshVersion}|${refreshKind}|${itemNamespace}|${itemName}|${item?.kind || refreshKind}`
     : '';
 

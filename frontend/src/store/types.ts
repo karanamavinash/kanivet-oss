@@ -310,6 +310,8 @@ export interface ResourceSlice {
   stopRolloutPolling: () => void;
   addRolloutTracking: (key: string, group: string, version: string, kind: string, namespace: string, name: string) => void;
   removeRolloutTracking: (key: string) => void;
+  setPortForwardNavCount: (cluster: string, count: number) => void;
+  refreshPortForwardNavCount: (cluster: string) => Promise<void>;
 }
 
 // How current a list subscription is, by topic (`items:<cluster>:…`). Kept per

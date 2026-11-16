@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { InspectorAIMenuItems, InspectorAskAI } from '../ai/InspectorAI';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
 import { ChevronDownIcon, ChevronRightIcon, ReloadIcon, TrashIcon, SizeIcon, CubeIcon, BarChartIcon, CheckCircledIcon, PlayIcon } from '@radix-ui/react-icons';
@@ -20,6 +20,11 @@ import NetworkInspectorSection from '../network/NetworkInspectorSection';
 import api from '../../services/api';
 import ClipboardCopy from '../common/ClipboardCopy';
 import { useStore } from '../../store';
+import { localForwardHttpUrl, PORT_FORWARD_KIND_POD } from '../portforward/portForwardConstants';
+import {
+  buildPodPortForwardMap,
+  findActivePortForward,
+} from '../portforward/portForwardUtils';
 import { useShallow } from 'zustand/react/shallow';
 import CRDDefinitionView from '../CRDDefinitionView';
 import APIResourceDefinitionView from '../APIResourceDefinitionView';
@@ -86,6 +91,31 @@ const ContainersSection = ({ resource, cluster, onVolumeClick }: { resource: any
   const [portForwards, setPortForwards] = useState<Record<string, any>>({});
   const [loadingPorts, setLoadingPorts] = useState<Set<string>>(new Set());
 
+  useEffect(() => {
+    let cancelled = false;
+    const ports: Array<{ containerName: string; port: number }> = [];
+    for (const container of allContainers) {
+      const containerSpec = (container.isInit ? spec.initContainers : spec.containers)?.find((c: any) => c.name === container.name) || {};
+      for (const p of containerSpec.ports || []) {
+        if (p.containerPort) ports.push({ containerName: container.name, port: p.containerPort });
+      }
+    }
+    if (!metadata.namespace || !metadata.name || ports.length === 0) {
+      setPortForwards({});
+      return () => { cancelled = true; };
+    }
+    void (async () => {
+      try {
+        const forwards = await api.listPortForwards(cluster);
+        if (cancelled) return;
+        setPortForwards(buildPodPortForwardMap(forwards, metadata.namespace, metadata.name, ports));
+      } catch {
+        /* list optional */
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [cluster, metadata.namespace, metadata.name, allContainers, spec]);
+
   if (!status.containerStatuses && !status.initContainerStatuses) return null;
   if (allContainers.length === 0) return null;
 
@@ -95,13 +125,18 @@ const ContainersSection = ({ resource, cluster, onVolumeClick }: { resource: any
     const portKey = `${containerName}-${port}`;
     setLoadingPorts(prev => new Set(prev).add(portKey));
     try {
-      if (portForwards[portKey]) {
-        await api.stopPortForward(portForwards[portKey].id);
+      const active = portForwards[portKey] || await findActivePortForward(
+        cluster, metadata.namespace, metadata.name, port, PORT_FORWARD_KIND_POD,
+      );
+      if (active) {
+        await api.stopPortForward(active.id);
         setPortForwards(prev => { const next = { ...prev }; delete next[portKey]; return next; });
+        void useStore.getState().refreshPortForwardNavCount(cluster);
       } else {
         const result = await api.createPortForward(cluster, metadata.namespace, metadata.name, port);
         setPortForwards(prev => ({ ...prev, [portKey]: result }));
-        window.open(`http://localhost:${result.localPort}`, '_blank');
+        void useStore.getState().refreshPortForwardNavCount(cluster);
+        window.open(localForwardHttpUrl(result.localPort), '_blank', 'noopener,noreferrer');
       }
     } catch (e) { console.error('Port forward failed:', e); }
     finally { setLoadingPorts(prev => { const next = new Set(prev); next.delete(portKey); return next; }); }

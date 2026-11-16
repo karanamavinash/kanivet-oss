@@ -1,4 +1,5 @@
 import { FocusArea } from '../types';
+import { PORT_FORWARD_PAGE_TITLE } from '../components/portforward/portForwardConstants';
 import { TreeNode, TabState, Tab, MonitoringSettings } from './types';
 
 export const isRolloutComplete = (item: any): boolean => {
@@ -91,6 +92,30 @@ export const findNodeById = (nodes: TreeNode[], id: string): TreeNode | null => 
   }
   return null;
 };
+
+export const mapTreeNodeById = (nodes: TreeNode[], nodeId: string, patch: Partial<TreeNode>): TreeNode[] =>
+  nodes.map((node) => {
+    if (node.id === nodeId) return { ...node, ...patch };
+    if (node.children) return { ...node, children: mapTreeNodeById(node.children, nodeId, patch) };
+    return node;
+  });
+
+export const PORT_FORWARD_NAV_ID = 'port-forwarding';
+
+/** Port forwarding entry at the bottom of the Network sidebar group (Freelens-style). */
+export function networkingPortForwardChild(cluster: string): TreeNode {
+  return {
+    id: PORT_FORWARD_NAV_ID,
+    label: PORT_FORWARD_PAGE_TITLE,
+    type: 'port-forwarding',
+    data: { cluster },
+  };
+}
+
+export function appendNetworkingMenuItems(categoryId: string, cluster: string, children: TreeNode[]): TreeNode[] {
+  if (categoryId !== 'networking') return children;
+  return [...children, networkingPortForwardChild(cluster)];
+}
 
 export const predefinedCategories: Record<string, any[]> = {
   workloads: [
