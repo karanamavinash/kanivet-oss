@@ -1,3 +1,5 @@
+import { PORT_FORWARD_PAGE_TITLE } from '../components/portforward/portForwardConstants';
+
 export const pageResources: Record<string, any> = {
   overview: { name: 'cluster-dashboard', group: '', version: 'v1', kind: 'ClusterDashboard', namespaced: false },
   finops: { name: 'finops-dashboard', group: '', version: 'v1', kind: 'FinOpsDashboard', namespaced: false },
@@ -5,6 +7,7 @@ export const pageResources: Record<string, any> = {
   certificates: { name: 'certificates-dashboard', group: '', version: 'v1', kind: 'CertificatesDashboard', namespaced: false },
   topology: { name: 'topology', group: '', version: 'v1', kind: 'TopologyView', namespaced: false },
   network: { name: 'network-page', group: '', version: 'v1', kind: 'NetworkPage', namespaced: false },
+  'port-forwarding': { name: 'port-forwarding', group: '', version: 'v1', kind: 'PortForwardsPage', namespaced: false },
   'incident-timeline': { name: 'incident-timeline', group: '', version: 'v1', kind: 'IncidentTimeline', namespaced: false },
   issues: { name: 'health-issues', group: '', version: 'v1', kind: 'HealthIssues', namespaced: false },
   audit: { name: 'health-audit', group: '', version: 'v1', kind: 'HealthAudit', namespaced: false },
@@ -35,6 +38,7 @@ type PageNodeType =
   | 'issues'
   | 'audit'
   | 'network'
+  | 'port-forwarding'
   | 'changes'
   | 'gitops'
   | 'cnpg-overview';
@@ -49,6 +53,7 @@ export function pageNode(kind: string, cluster: string | null) {
     CertificatesDashboard: { id: 'certificates-dashboard', label: 'Certificates', type: 'certificates' },
     TopologyView: { id: 'topology', label: 'Topology', type: 'topology' },
     NetworkPage: { id: 'network-page', label: 'Network', type: 'network' },
+    PortForwardsPage: { id: 'port-forwarding', label: PORT_FORWARD_PAGE_TITLE, type: 'port-forwarding' },
     IncidentTimeline: { id: 'incident-timeline', label: 'Incident Timeline', type: 'incident-timeline' },
     HealthIssues: { id: 'cluster-issues', label: 'Issues', type: 'issues' },
     HealthAudit: { id: 'cluster-audit', label: 'Audit', type: 'audit' },

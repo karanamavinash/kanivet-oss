@@ -51,6 +51,7 @@ const CertificatesPage = lazyView(() => import('./certs/CertificatesPage'));
 const ComparePage = lazyView(() => import('./compare/ComparePage'));
 const TopologyPage = lazyView(() => import('./topology/TopologyPage'));
 const NetworkPage = lazyView(() => import('./network/NetworkPage'));
+const PortForwardingPage = lazyView(() => import('./portforward/PortForwardingPage'));
 const RightsizingDashboard = lazyView(
   () => import('./rightsizing/RightsizingDashboard'),
 );
@@ -1080,6 +1081,8 @@ const ResourceList = ({ paneId, isFocusedPane, onRequestPaneClose }: ResourceLis
                       <TopologyPage key={`topology-${tab.id}`} cluster={tab.cluster || currentTab || ''} />
                     ) : tab.resource?.kind === 'NetworkPage' ? (
                       <NetworkPage key={`network-page-${tab.id}`} cluster={tab.cluster || currentTab || ''} />
+                    ) : tab.resource?.kind === 'PortForwardsPage' ? (
+                      <PortForwardingPage key={`port-forwarding-${tab.id}`} cluster={tab.cluster || currentTab || ''} />
                     ) : tab.resource?.kind === 'HelmReleases' ? (
                       <HelmPage key={`helm-page-${tab.id}`} cluster={currentTab || ''} />
                     ) : tab.resource?.kind === 'IncidentTimeline' ? (

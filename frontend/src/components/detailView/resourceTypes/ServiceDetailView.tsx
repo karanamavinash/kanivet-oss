@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { GlobeIcon, Share2Icon, CheckCircledIcon } from '@radix-ui/react-icons';
 import PropertyRow from '../../common/PropertyRow';
 import PropertyGroup from '../shared/PropertyGroup';
@@ -9,6 +9,12 @@ import ServicePorts from '../../ServicePorts';
 import ClipboardCopy from '../../common/ClipboardCopy';
 import { Tooltip } from '../../common/Tooltip';
 import api from '../../../services/api';
+import { useStore } from '../../../store';
+import { localForwardHttpUrl, PORT_FORWARD_KIND_SERVICE } from '../../portforward/portForwardConstants';
+import {
+  buildServicePortForwardMap,
+  findActivePortForward,
+} from '../../portforward/portForwardUtils';
 import { DetailViewPropsWithCluster } from '../../../types/detailView';
 import './ServiceDetailView.css';
 
@@ -17,17 +23,36 @@ const ServiceDetailView: React.FC<DetailViewPropsWithCluster> = ({ resource, clu
   const [portForwards, setPortForwards] = useState<Record<string, any>>({});
   const [loadingPorts, setLoadingPorts] = useState<Set<string>>(new Set());
 
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const forwards = await api.listPortForwards(cluster);
+        if (cancelled) return;
+        setPortForwards(buildServicePortForwardMap(forwards, metadata.namespace, metadata.name));
+      } catch {
+        /* list optional */
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [cluster, metadata.namespace, metadata.name]);
+
   const handlePortForward = async (port: number) => {
     const portKey = `${port}`;
     setLoadingPorts(prev => new Set(prev).add(portKey));
     try {
-      if (portForwards[portKey]) {
-        await api.stopPortForward(portForwards[portKey].id);
+      const active = portForwards[portKey] || await findActivePortForward(
+        cluster, metadata.namespace, metadata.name, port, PORT_FORWARD_KIND_SERVICE,
+      );
+      if (active) {
+        await api.stopPortForward(active.id);
         setPortForwards(prev => { const next = { ...prev }; delete next[portKey]; return next; });
+        void useStore.getState().refreshPortForwardNavCount(cluster);
       } else {
         const result = await api.createServicePortForward(cluster, metadata.namespace, metadata.name, port);
         setPortForwards(prev => ({ ...prev, [portKey]: result }));
-        window.open(`http://localhost:${result.localPort}`, '_blank');
+        void useStore.getState().refreshPortForwardNavCount(cluster);
+        window.open(localForwardHttpUrl(result.localPort), '_blank', 'noopener,noreferrer');
       }
     } catch (e) { console.error('Port forward failed:', e); }
     finally { setLoadingPorts(prev => { const next = new Set(prev); next.delete(portKey); return next; }); }

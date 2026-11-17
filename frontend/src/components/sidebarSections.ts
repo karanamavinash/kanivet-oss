@@ -18,7 +18,7 @@ export const SIDEBAR_SECTIONS: { id: SidebarSectionId; label: string | null }[] 
 /** Node types that open a page tab rather than expanding. */
 export const PAGE_NODE_TYPES = new Set([
   'overview', 'argo-overview', 'gitops', 'cnpg-overview', 'helm', 'finops', 'rightsizing',
-  'certificates', 'topology', 'network', 'cluster-settings', 'incident-timeline', 'issues',
+  'certificates', 'topology', 'network', 'port-forwarding', 'cluster-settings', 'incident-timeline', 'issues',
   'audit', 'changes', 'access', 'upgrade-readiness',
 ]);
 

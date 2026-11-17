@@ -18,12 +18,20 @@ import { lazyView } from '../../utils/lazyView';
 import { preloadEditor } from '../MonacoEditor';
 import { TOPOLOGY_KINDS, openTopology, refFromItem } from '../topology/topologyNav';
 import { getResourceIcon } from '../../utils/resourceIcons';
+import { PORT_FORWARD_DETAIL_KIND } from '../portforward/portForwardConstants';
 import './TabContent.css';
 
 const HelmReleaseDetailView = lazyView(
   () => import('../detailView/resourceTypes/HelmReleaseDetailView'),
   ({ release, mode }: { release: any; mode?: 'detail' | 'center' }) => (
     <ResourceDetailSkeleton resource={release} mode={mode} />
+  ),
+);
+
+const PortForwardDetailView = lazyView(
+  () => import('../detailView/resourceTypes/PortForwardDetailView'),
+  ({ forward, mode }: { forward: any; mode?: 'detail' | 'center' }) => (
+    <ResourceDetailSkeleton resource={forward} mode={mode} />
   ),
 );
 
@@ -225,6 +233,25 @@ const TabContent = ({ tab, mode = 'detail', onPinClick, isDeleted }: TabContentP
 
   const hasBasicInfo = item && typeof item === 'object' && (item.metadata?.name || item.name);
   const isHelmRelease = item?.kind === 'HelmRelease' && item?.chart;
+  const isPortForward = item?.kind === PORT_FORWARD_DETAIL_KIND && (item?.portForwardId || item?.id);
+
+  if (isPortForward) {
+    const forwardKey = `${cluster}-${item.portForwardId || item.id}`;
+    return (
+      <div className={`tab-content-inner tab-content-${mode}`}>
+        <TabStatusBanner isDeleted={isDeleted} isRecreated={tab?.isRecreated} />
+        <div className="view-content-root">
+          <div className="view-tab-content">
+            <div className="tab-content-body">
+              <div className="tab-content-pretty">
+                <PortForwardDetailView key={forwardKey} cluster={cluster} forward={item} mode={mode} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isHelmRelease) {
     const releaseKey = `${cluster}-${item.namespace}-${item.name}`;

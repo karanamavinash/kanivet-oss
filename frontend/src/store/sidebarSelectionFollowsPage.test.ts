@@ -28,7 +28,7 @@ const makeStore = () =>
 // Each new page, with the sidebar node type its tab must select.
 const pages: [string, string][] = [
   ['issues', 'issues'], ['audit', 'audit'], ['changes', 'changes'], ['topology', 'topology'],
-  ['network', 'network'], ['access', 'access'], ['certificates', 'certificates'],
+  ['network', 'network'], ['port-forwarding', 'port-forwarding'], ['access', 'access'], ['certificates', 'certificates'],
   ['upgrade-readiness', 'upgrade-readiness'], ['gitops', 'gitops'], ['cnpg-overview', 'cnpg-overview'],
   ['compare', 'compare'],
 ];

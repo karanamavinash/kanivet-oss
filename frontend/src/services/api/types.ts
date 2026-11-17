@@ -30,6 +30,9 @@ export interface PortForward {
   cluster: string;
   namespace: string;
   podName: string;
+  name?: string;
+  kind?: string;
+  servicePort?: number;
   localPort: number;
   remotePort: number;
   active: boolean;

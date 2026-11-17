@@ -1,3 +1,4 @@
+import { PORT_FORWARD_PAGE_TITLE } from '../components/portforward/portForwardConstants';
 import { pageNode } from './navigationTargets';
 import { StateCreator } from 'zustand';
 import { getResourceCategory } from '../utils/resourceUtils';
@@ -29,6 +30,7 @@ export const createResourceListTabSlice: StateCreator<StoreState, [], [], Resour
       : resourceKind === 'RightsizingDashboard' ? 'Rightsizing'
       : resourceKind === 'CertificatesDashboard' ? 'Certificates'
       : resourceKind === 'NetworkPage' ? 'Network'
+      : resourceKind === 'PortForwardsPage' ? PORT_FORWARD_PAGE_TITLE
       : resourceKind === 'IncidentTimeline' ? 'Incidents'
       : resourceKind === 'ResourceCompare' ? 'Compare'
       : resourceKind === 'UpgradeReadiness' ? 'Upgrade readiness'

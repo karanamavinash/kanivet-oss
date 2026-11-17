@@ -4,7 +4,15 @@ import api from '../services/api';
 import { notifyDrainComplete, notifyRolloutComplete } from '../services/islandNotifications';
 import { fetchResourceDetails, fetchResourceEvents } from './loadDetailsApi';
 import { ResourceSlice, StoreState, Tab, TreeNode, PinnedDetail, RolloutStatusData } from './types';
-import { rebuildTabIndex, updateTreeNode, findNodeById, predefinedCategories } from './utils';
+import {
+  rebuildTabIndex,
+  updateTreeNode,
+  findNodeById,
+  predefinedCategories,
+  appendNetworkingMenuItems,
+  mapTreeNodeById,
+  PORT_FORWARD_NAV_ID,
+} from './utils';
 import { applyDetailsToTabs, applyEventsToTabs, applyLoadedDetails, markDetailsDeleted, refOf, type ObjectRef } from './applyLoadedDetails';
 import { keepKnownCounts } from './keepKnownCounts';
 import { anyCountPending, countsSettled, refetchCountsLater } from './countRefetch';
@@ -274,10 +282,14 @@ export const createResourceSlice: StateCreator<StoreState, [], [], ResourceSlice
     if (nodeType === 'category') {
       const predefinedResources = predefinedCategories[metadata.categoryId as keyof typeof predefinedCategories];
       if (predefinedResources) {
-        const formattedResources = predefinedResources.map((res: any) => ({
-          id: `${metadata.categoryId}-${res.group || 'core'}-${res.version}-${res.name}`,
-          label: res.name, type: 'resource', data: res, count: undefined,
-        }));
+        const formattedResources = appendNetworkingMenuItems(
+          metadata.categoryId,
+          cluster,
+          predefinedResources.map((res: any) => ({
+            id: `${metadata.categoryId}-${res.group || 'core'}-${res.version}-${res.name}`,
+            label: res.name, type: 'resource', data: res, count: undefined,
+          })),
+        );
         const { activeTabs, tabIndexMap } = get();
         const tabIndex = tabIndexMap.get(cluster) ?? -1;
         if (tabIndex !== -1) {
@@ -300,13 +312,17 @@ export const createResourceSlice: StateCreator<StoreState, [], [], ResourceSlice
               const exists = predefinedResources.some((predefined: any) => predefined.name === backendRes.name);
               if (!exists) mergedResources.push(backendRes);
             });
-            const formattedResourcesWithCounts = mergedResources.map((res: any) => {
-              const backendData = backendResourceMap.get(res.name);
-              return {
-                id: `${metadata.categoryId}-${(backendData as any)?.group || res.group || 'core'}-${(backendData as any)?.version || res.version}-${res.name}`,
-                label: res.name, type: 'resource', data: backendData || res, count: (backendData as any)?.count ?? undefined,
-              };
-            });
+            const formattedResourcesWithCounts = appendNetworkingMenuItems(
+              metadata.categoryId,
+              cluster,
+              mergedResources.map((res: any) => {
+                const backendData = backendResourceMap.get(res.name);
+                return {
+                  id: `${metadata.categoryId}-${(backendData as any)?.group || res.group || 'core'}-${(backendData as any)?.version || res.version}-${res.name}`,
+                  label: res.name, type: 'resource', data: backendData || res, count: (backendData as any)?.count ?? undefined,
+                };
+              }),
+            );
             const { activeTabs, tabIndexMap } = get();
             const tabIdx = tabIndexMap.get(cluster) ?? -1;
             if (tabIdx !== -1) {
@@ -319,7 +335,9 @@ export const createResourceSlice: StateCreator<StoreState, [], [], ResourceSlice
               set({ activeTabs: updatedTabs2, tabIndexMap: rebuildTabIndex(updatedTabs2) });
             }
             settleOrRefetchCounts(get, cluster, nodeId, metadata, anyCountPending(resourcesWithCounts));
+            void get().refreshPortForwardNavCount(cluster);
           }).catch(() => settleOrRefetchCounts(get, cluster, nodeId, metadata, true));
+        void get().refreshPortForwardNavCount(cluster);
         return;
       }
 
@@ -770,5 +788,26 @@ export const createResourceSlice: StateCreator<StoreState, [], [], ResourceSlice
     rolloutStatuses.delete(key);
     get().updateCurrentTabState({ rolloutRequests, rolloutStatuses });
     if (rolloutRequests.size === 0) get().stopRolloutPolling();
+  },
+
+  setPortForwardNavCount: (cluster: string, count: number) => {
+    const { activeTabs, tabIndexMap } = get();
+    const tabIndex = tabIndexMap.get(cluster) ?? -1;
+    if (tabIndex === -1) return;
+    const tab = activeTabs[tabIndex];
+    const treeData = mapTreeNodeById(tab.state.treeData, PORT_FORWARD_NAV_ID, { count });
+    const updatedTabs = [...activeTabs];
+    updatedTabs[tabIndex] = { ...tab, state: { ...tab.state, treeData } };
+    set({ activeTabs: updatedTabs, tabIndexMap: rebuildTabIndex(updatedTabs) });
+  },
+
+  refreshPortForwardNavCount: async (cluster: string) => {
+    if (!cluster) return;
+    try {
+      const forwards = await api.listPortForwards(cluster);
+      get().setPortForwardNavCount(cluster, forwards.filter((f) => f.active).length);
+    } catch {
+      /* leave the count already shown */
+    }
   },
 });
